@@ -1,0 +1,15 @@
+{
+  "name": "groups",
+  "version": "1.0.0",
+  "description": "groups for N-gons",
+  "main": "groups.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.geointapps.org:acmesds/groups.git"
+  },
+  "author": "acmesds",
+  "license": "ISC"
+}
