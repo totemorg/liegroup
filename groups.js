@@ -97,7 +97,7 @@ function GROUP(N) {
 	
 	this.moves = {flips:even?N:0, mirrors:even?N-2:0, swaps:odd?N:0};
 	
-	// generate the 2N symmetries of G and their corresponding permutators H with arguments A.
+	// Generate the 2N symmetries of G and their corresponding permutators H with arguments A.
 	
 	for (var n=1;n<=N;n++) e.push(n); H[g="e"] = ident; A[g] = 0;
 	
@@ -110,7 +110,7 @@ function GROUP(N) {
 	else
 		for (var n=0; n<N; n++) G[g="s"+n] = (H[g]=swap)(A[g]=n,e);
 	
-	// generate products P, inverses I, involutes V and rotation-tests X
+	// Generate products P, inverses I, involutes V and rotation-tests X.
 	
 	for (var f in G) for (var g in G)
 		find( fg = H[g](A[g], G[f]), function (h) {
@@ -122,7 +122,7 @@ function GROUP(N) {
 			if (! X[h] ) X[h] = {}; X[h][fg] = (f[0] != "r" && g[0] != "r") ? 1 : 0;
 		});
 	
-	// generate conjugacy classes C
+	// Generate conjugacy classes C.
 	
 	for (var f in G) for (var g in G) if (f != "e" && g != "e") {
 		var _g = I[g], _gf = P[_g+"*"+f], _gfg = H[g](A[g], G[_gf]);
@@ -138,7 +138,9 @@ function GROUP(N) {
 		});
 	}
 	
-	var image = this.image = function(X, M) { // return KxK image X centered in NxN image
+	// Return supplied KxK image X centered in an MxM image.
+	
+	var image = this.image = function(X, M) {
 		var A = new Array(M*M);
 
 		for (var n=0,N=A.length; n<N; n++) A[n] = 0;
@@ -156,9 +158,11 @@ function GROUP(N) {
 
 		//console.log(A);
 		return A;
-	}			
+	}	
 		
-	// Pass the computed scattering symmetries of an image A about angle rho to a callback cb.
+	// Compute scattering of an image A about the rho symmetry from the named leg.  Each pair is 
+	// passed to the callback cb(pair) to compute its (+/-) scattering coefficients.  After all
+	// pairs are made, the computed scattering coefficients coff are passed to cb(coef, leg).
 	
 	var scatter = this.scatter = function (A,rho,leg,cb) {
 		var 
@@ -169,8 +173,11 @@ function GROUP(N) {
 			alpha = Math.cos(rho * c), 
 			beta = Math.sin(rho * c),
 
-			syms = { x: new Array(M2), y: new Array(M2), n: 0, map: new Array(M) };
-
+			pos = "+", neg = "-",
+			coef = { n: 0, map: new Array(M) };
+			
+		coef[pos] = new Array(M2);
+		coef[neg] = new Array(M2);
 		//console.log( [rho, [M,N],[M2,N2],[alpha,beta] ] );
 
 		/*
@@ -227,52 +234,52 @@ function GROUP(N) {
 
 				pair = { x: A[xm], y: A[ym] };
 			
-			if ( !syms.map[xm] ) {  // pair has not been connected
-				syms.map[xm] = ym;  // map pair being connected
-				syms.map[ym] = xm;
+			if ( !coef.map[xm] ) {  // pair has not been connected
+				coef.map[xm] = ym;  // map pair being connected
+				coef.map[ym] = xm;
 
 				if ( cb ) {  // cb computes the pair scattering symmetries (x,y)
 					cb(pair);
 
-					syms.x[syms.n] = pair.x;
-					syms.y[syms.n] = pair.y;
-					syms.n++;
+					coef["+"][coef.n] = pair.x;
+					coef["-"][coef.n] = pair.y;
+					coef.n++;
 				}
 
-				//console.log([ x0, y0, syms.n, [pair.x, pair.y] ]);
+				//console.log([ x0, y0, coef.n, [pair.x, pair.y] ]);
 			}
 		}
 		
 		if (cb) {  // return symmetries to callback 
-			cb( syms.x , "x");
-			cb( syms.y , "y");
+			cb( coef[pos] , leg + pos );
+			cb( coef[neg] , leg + neg );
 		}
 	}
 	
-	// deep haar scatter image A about rho symmetry until depth level
+	// Deep haar scatter image A about the rho symmetry to the requested depth starting from the named leg.
 	
-	var haar = this.haar = function (A,rho,level,leg,cb) {
+	var haar = this.haar = function (A,rho,depth,leg,cb) {
 		
-		function recurse(A,level,leg) { // pad image A to square and pass to haar
+		function recurse(A,depth,leg) { // pad image A to square and pass to haar
 			var
 				M = A.length,
 				pad = Math.max(0, Math.pow(Math.round( Math.sqrt(M) ),2) - M),
 				pads = new Array(pad);
 
-			//console.log(['pad',level,leg,M,pad]);
+			//console.log(['pad',depth,leg,M,pad]);
 			for (var n=0; n<pad; n++) pads[n] = 0;
 
-			haar(A.concat(pads), rho, level, leg, cb);
+			haar(A.concat(pads), rho, depth, leg, cb);
 		}
 
-		scatter(A, rho, leg, function (pair, lab) { 	// get scattering symmetries
+		scatter(A, rho, leg, function (pair, leg) { 	// get scattering symmetries
 
 			if (pair.constructor == Array)   // image so recurse down haar tree
-				if (level)  					// recurse to next level
-					recurse( pair , level-1, leg+lab);
+				if (depth)  							// recurse to next depth
+					recurse( pair , depth-1, leg);
 
-				else  							// callback with scatterings
-					cb( pair , leg+lab );
+				else  									// callback with scatterings
+					cb( pair , leg );
 			
 			else {  // pair so compute its haar scattering
 				var x = pair.x, y = pair.y;
@@ -294,17 +301,89 @@ var G = new GROUP(N=4);
 2222
 */
 var A = G.image(`
-1111
-1111
-1111
-1111
+1789
+1234
+4321
+6543
 `, 16);
 
-var NS = 0;
+var Uset = {};
 
 G.haar( A,	G.rho[1], 3 , "", function (S,leg) {
-	console.log([NS++, leg, S]);
+	
+	function dot(a,b) {
+		for (var n=0, N=a.length, rtn=0; n<N; n++) rtn += a[n] * b[n];
+		return rtn;
+	}
+	
+	function proj(u,v) {
+		return scale( copy(u), - dot(v, u) / dot(u, u) );
+	}
+	
+	function scale(u,v) {
+		if (v.constructor == Array)
+			for (var n=0, N=u.length; n<N; n++) u[n] = v[n] * u[n];
+		else
+			for (var n=0, N=u.length; n<N; n++) u[n] = v * u[n];
+
+		return u;
+	}
+	
+	function add(u,v) {
+		if (v.constructor == Array)
+			for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v[n];
+		else
+			for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v;
+			
+		return u;
+	}
+	
+	function copy(u) {
+		return init(new Array(u.length), u);
+	}
+		
+	function init(u,a) {
+		if (a.constructor == Array)
+			for (var n=0, N=u.length; n<N; n++) u[n] = a[n];
+		else
+			for (var n=0, N=u.length; n<N; n++) u[n] = a;
+		
+		return u;
+	}
+	
+	function gs(v, us) {
+		var  u = copy(v);
+		
+		for (var n in us) 
+			if ( isnull( add(u, proj(us[n], v)) ) ) {
+				//console.log(["drop "+n, v]);
+				return null;
+			}
+		
+		return u;
+	}
+
+	function isnull(u) {	
+		for (var n=0, N=u.length; n<N; n++)
+			if ( Math.abs(u[n]) > 1e-3 ) 
+				return false;
+		
+		return true;
+	}
+
+	//console.log([leg, S]);
+	
+	if (false) 
+		Uset[leg] = copy(S);
+	
+	else
+	if (u = gs(S, Uset)) 
+		Uset[leg] = copy(u);
+		
 });
+
+//console.log(Uset);
+for (var n in Uset) console.log(n);
 
 // UNCLASSIFIED
 				   
