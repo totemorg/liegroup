@@ -160,7 +160,7 @@ function GROUP(N) {
 		
 	// Pass the computed scattering symmetries of an image A about angle rho to a callback cb.
 	
-	var scatter = this.scatter = function (A,rho,cb) {
+	var scatter = this.scatter = function (A,rho,leg,cb) {
 		var 
 			M = A.length, N = Math.round( Math.sqrt(M) ),	// image A is NxN
 			M2 = Math.floor((M-N)/2)+N, N2 = (N-1)/2, 		// number of pairs in image A
@@ -171,7 +171,7 @@ function GROUP(N) {
 
 			syms = { x: new Array(M2), y: new Array(M2), n: 0, map: new Array(M) };
 
-		console.log( [rho, [M,N],[M2,N2],[alpha,beta] ] );
+		//console.log( [rho, [M,N],[M2,N2],[alpha,beta] ] );
 
 		/*
 		var
@@ -244,35 +244,35 @@ function GROUP(N) {
 		}
 		
 		if (cb) {  // return symmetries to callback 
-			cb( syms.x );
-			cb( syms.y );
+			cb( syms.x , "x");
+			cb( syms.y , "y");
 		}
 	}
 	
 	// deep haar scatter image A about rho symmetry until depth level
 	
-	var haar = this.haar = function (A,rho,level,cb) {
+	var haar = this.haar = function (A,rho,level,leg,cb) {
 		
-		function recurse(A) { // pad image A to square and pass to haar
+		function recurse(A,level,leg) { // pad image A to square and pass to haar
 			var
 				M = A.length,
 				pad = Math.max(0, Math.pow(Math.round( Math.sqrt(M) ),2) - M),
 				pads = new Array(pad);
 
-			console.log(['pad',level,M,pad]);
+			//console.log(['pad',level,leg,M,pad]);
 			for (var n=0; n<pad; n++) pads[n] = 0;
 
-			haar(A.concat(pads), rho, level-1, cb);
+			haar(A.concat(pads), rho, level, leg, cb);
 		}
 
-		scatter(A, rho, function (pair) { 	// get scattering symmetries
+		scatter(A, rho, leg, function (pair, lab) { 	// get scattering symmetries
 
 			if (pair.constructor == Array)   // image so recurse down haar tree
 				if (level)  					// recurse to next level
-					recurse( pair );
+					recurse( pair , level-1, leg+lab);
 
 				else  							// callback with scatterings
-					cb( pair );
+					cb( pair , leg+lab );
 			
 			else {  // pair so compute its haar scattering
 				var x = pair.x, y = pair.y;
@@ -288,15 +288,22 @@ function GROUP(N) {
 
 var G = new GROUP(N=4);
 
-var A = G.image(`
-7811
+/*7811
 6921
 5431
 2222
+*/
+var A = G.image(`
+1111
+1111
+1111
+1111
 `, 16);
 
-G.haar( A,	G.rho[1], 3 , function (S) {
-	console.log(S);
+var NS = 0;
+
+G.haar( A,	G.rho[1], 3 , "", function (S,leg) {
+	console.log([NS++, leg, S]);
 });
 
 // UNCLASSIFIED
