@@ -1,14 +1,14 @@
 // UNCLASSIFIED
 
-function GEN(N) {
-	function rot(i,x) {
+function GROUP(N) {
+	function rot(i,x) {  // rotation permutation
 		var rtn = new Array(N);
 		for (var n=0; n<N; n++)
 			rtn[n] = x[ (N-i+n) % N ];
 		return rtn;
 	}
 	
-	function mirror(i,x) {
+	function mirror(i,x) {  // mirror permutation
 		var rtn = new Array(N);
 		rtn[i] = x[i];
 		i += N2;
@@ -20,7 +20,7 @@ function GEN(N) {
 		return rtn;
 	}
 		
-	function swap(i,x) {
+	function swap(i,x) { // swap permutation
 		var rtn = new Array(N);
 		rtn[i] = x[i];
 		for (var n=1,iL=(N+i-n)%N,iR=(i+n)%N; n<=N2; n++,iL=(N+i-n)%N,iR=(i+n)%N) {
@@ -30,7 +30,7 @@ function GEN(N) {
 		return rtn;
 	}
 
-	function flip(i,x) {
+	function flip(i,x) { // slip permuation
 		var rtn = new Array(N);
 		for (var n=0,iL=i,iR=i+1,iN=i+1; n<iN; n++,iL--,iR++) {
 			rtn[iL] = x[iR];
@@ -44,18 +44,18 @@ function GEN(N) {
 		return rtn;
 	}
 
-	function ident(i,x) {
+	function ident(i,x) { // identity permutation
 		return x;
 	}
 	
-	function eq(x,y) {
+	function eq(x,y) { // test permuations are equal
 		for (var n=0;n<N;n++)
 			if (x[n] != y[n]) return false;
 		
 		return true;
 	}
 	
-	function find(x, cb) {
+	function find(x, cb) { // find permuation and pass to callback
 		for (var h in G)
 				if ( eq(x, G[h]) )
 					return cb(h);
@@ -84,7 +84,7 @@ function GEN(N) {
 		e = G.e = [],
 		rho =  this.rho = index(180/N),
 		order = this.order = 2*N,
-		sym = this.sym = {
+		sym = this.sym = { // symmetry labels
 			std: {},
 			fav: {
 				f0: "h",
@@ -97,7 +97,7 @@ function GEN(N) {
 	
 	this.moves = {flips:even?N:0, mirrors:even?N-2:0, swaps:odd?N:0};
 	
-	// gen the 2N symmetries of G and their corresponding permutators H with arguments A.
+	// generate the 2N symmetries of G and their corresponding permutators H with arguments A.
 	
 	for (var n=1;n<=N;n++) e.push(n); H[g="e"] = ident; A[g] = 0;
 	
@@ -110,7 +110,7 @@ function GEN(N) {
 	else
 		for (var n=0; n<N; n++) G[g="s"+n] = (H[g]=swap)(A[g]=n,e);
 	
-	// gen product P, inverse I, involute V and the rotation-tested X maps
+	// generate products P, inverses I, involutes V and rotation-tests X
 	
 	for (var f in G) for (var g in G)
 		find( fg = H[g](A[g], G[f]), function (h) {
@@ -122,7 +122,7 @@ function GEN(N) {
 			if (! X[h] ) X[h] = {}; X[h][fg] = (f[0] != "r" && g[0] != "r") ? 1 : 0;
 		});
 	
-	// gen conjugacy classes C
+	// generate conjugacy classes C
 	
 	for (var f in G) for (var g in G) if (f != "e" && g != "e") {
 		var _g = I[g], _gf = P[_g+"*"+f], _gfg = H[g](A[g], G[_gf]);
@@ -138,79 +138,166 @@ function GEN(N) {
 		});
 	}
 	
-	// define the the reflection of an image A about the n'th mirror
-	
-	this.matrix = function(X) {
-		var A = [], B = [];
+	var image = this.image = function(X, M) { // return KxK image X centered in NxN image
+		var A = new Array(M*M);
 
-		for (var n=1, N=X.length; n<N; n++)
-			if ((x = X.charAt(n)) == "\n") {
-				A.push(B);
-				B = new Array();
-			}
+		for (var n=0,N=A.length; n<N; n++) A[n] = 0;
+
+		for (var n=1,K=0, N=X.length; n<N; n++,K++)
+			if ( X.charAt(n) == "\n" ) break;
+		
+		var pad = (M-K)/2;
+		
+		for (var n=1, N=X.length, m=pad*M+pad; n<N; n++)
+			if ( (x = X.charAt(n)) == "\n" ) 
+				m += 2*pad;
 			else
-				B.push( parseInt(x) );
+				A[m++] = parseInt(x);
 
 		//console.log(A);
 		return A;
 	}			
 		
-	this.reflector = function (A,n,s) {		
+	// Pass the computed scattering symmetries of an image A about angle rho to a callback cb.
+	
+	var scatter = this.scatter = function (A,rho,cb) {
 		var 
-			M = A.length, N = A[0].length, 
-			M2 = M/2, N2 = N/2,
-			a = Math.sqrt( M2*M2 + N2*N2 ) *(s||1),
-			a2 = a*a,
-			c = Math.PI / 180,
-			line = [ alpha = Math.cos(rho[n] * c), beta = Math.sin(rho[n] * c) ],
-			dt = Math.max(alpha, beta),
+			M = A.length, N = Math.round( Math.sqrt(M) ),	// image A is NxN
+			M2 = Math.floor((M-N)/2)+N, N2 = (N-1)/2, 		// number of pairs in image A
+
+			c = Math.PI / 180, 	// compute line of reflection symmetry
+			alpha = Math.cos(rho * c), 
+			beta = Math.sin(rho * c),
+
+			syms = { x: new Array(M2), y: new Array(M2), n: 0, map: new Array(M) };
+
+		console.log( [rho, [M,N],[M2,N2],[alpha,beta] ] );
+
+		/*
+		var
+			a = N2 * Math.sqrt( 2 ),
+			a2 = a*a,		
 			dx = dy = 1,
-			gamma = alpha*alpha + beta*beta,
+			dt = Math.max(alpha, beta),
+			gamma = alpha*alpha + beta*beta,			
 			du = Math.abs( dy*alpha/gamma - dx*beta/gamma );
-		
-		console.log([[M,N], a, line, [dt,du], [alpha, beta] ]);
-		
+			
 		for (var t=-a; t<a; t+=dt)
 			for (var b=Math.sqrt(a2 - t*t), u=0; u<b; u+=du) {
 				
 				var 
-					x = [ alpha*t - beta*u, beta*t + alpha*u ],
+					x = [ alpha*t - beta*u, beta*t + alpha*u ], // coordinates of pair
 					y = [ alpha*t + beta*u, beta*t - alpha*u ],
 					
-					x0 = Math.trunc(x[0] + M2), x1 = Math.trunc(x[1] + M2),
-					y0 = Math.trunc(y[0] + N2), y1 = Math.trunc(y[1] + N2),
-				
-					yHold = (A[y0] || [])[y1],
-					xHold = (A[x0] || [])[x1];
-								
-				if ( xHold != undefined && yHold != undefined ) {
-					A[y0][y1] = xHold;
-					A[x0][x1] = yHold;
-					//console.log([x0,x1],[y0,y1],[xHold,yHold]);
+					x0 = [ Math.floor(x[0] + N2), Math.floor(x[1] + N2) ],  // shift to center of image
+					y0 = [ Math.floor(y[0] + N2), Math.floor(y[1] + N2) ],
+					
+					xm = N * x0[0] + x0[1],  // index into image
+					ym = N * y0[0] + y0[1],
+					
+					pair = { x: A[xm], y: A[ym] };
+
+				console.log( [ x,x0,xm, y,y0,ym, pair ]);
+
+				if ( pair.x != undefined && pair.y != undefined ) { // pair inside image
+					if (cb) cb(pair);
+
+					A[y0][y1] = pair.x;
+					A[x0][x1] = pair.y;
+					//console.log([x0,x1], [y0,y1], pair);
+					//console.log([ x,y, pair]);
 				}
-				else
-					console.log([x0,x1],[y0,y1]);
+				//else
+				//	console.log([x0,x1], [y0,y1]);
 					
 			}
+		*/
+
+		for (var xm=0; xm<M; xm++) {  // generate (x,y) pairs
+			var
+				x0 = [ Math.floor(xm / N), xm % N ],  // pair start [image row col]
+				x = [ x0[0]-N2, x0[1]-N2 ], 	// image location
+
+				t = alpha * x[0] + beta * x[1],  // pair parametric parms
+				u = beta * x[0] - alpha * x[1],
+
+				y = [ alpha*t - beta*u, beta*t + alpha*u ],  // pair end image location
+				y0 = [ Math.round(y[0]+N2), Math.round(y[1]+N2) ],
+				ym = y0[0] * N + y0[1],
+
+				pair = { x: A[xm], y: A[ym] };
+			
+			if ( !syms.map[xm] ) {  // pair has not been connected
+				syms.map[xm] = ym;  // map pair being connected
+				syms.map[ym] = xm;
+
+				if ( cb ) {  // cb computes the pair scattering symmetries (x,y)
+					cb(pair);
+
+					syms.x[syms.n] = pair.x;
+					syms.y[syms.n] = pair.y;
+					syms.n++;
+				}
+
+				//console.log([ x0, y0, syms.n, [pair.x, pair.y] ]);
+			}
+		}
 		
-		return A;
+		if (cb) {  // return symmetries to callback 
+			cb( syms.x );
+			cb( syms.y );
+		}
 	}
 	
-	this.test = `
-00000
-07810
-06920
-05430
-00000
-`;
+	// deep haar scatter image A about rho symmetry until depth level
+	
+	var haar = this.haar = function (A,rho,level,cb) {
 		
+		function recurse(A) { // pad image A to square and pass to haar
+			var
+				M = A.length,
+				pad = Math.max(0, Math.pow(Math.round( Math.sqrt(M) ),2) - M),
+				pads = new Array(pad);
+
+			console.log(['pad',level,M,pad]);
+			for (var n=0; n<pad; n++) pads[n] = 0;
+
+			haar(A.concat(pads), rho, level-1, cb);
+		}
+
+		scatter(A, rho, function (pair) { 	// get scattering symmetries
+
+			if (pair.constructor == Array)   // image so recurse down haar tree
+				if (level)  					// recurse to next level
+					recurse( pair );
+
+				else  							// callback with scatterings
+					cb( pair );
+			
+			else {  // pair so compute its haar scattering
+				var x = pair.x, y = pair.y;
+				
+				pair.x = x+y;
+				pair.y = Math.abs(x-y);
+			}
+
+		});
+	}
+	
 }
 
-var p = new GEN(N=4);
+var G = new GROUP(N=4);
 
-//console.log(p);
-var A = p.matrix(p.test);
-console.log(p.reflector( A, 1) );
+var A = G.image(`
+7811
+6921
+5431
+2222
+`, 16);
 
-// CLASSIFIED
+G.haar( A,	G.rho[1], 3 , function (S) {
+	console.log(S);
+});
+
+// UNCLASSIFIED
 				   
