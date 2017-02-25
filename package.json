@@ -11,5 +11,9 @@
     "url": "git@git.geointapps.org:acmesds/groups.git"
   },
   "author": "acmesds",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "edmonds-blossom": "^1.0.0",
+    "node-svm": "^2.1.8"
+  }
 }
