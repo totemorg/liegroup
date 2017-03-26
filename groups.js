@@ -1,5 +1,13 @@
 // UNCLASSIFIED
 
+var GP = module.exports = {	
+	config: function (opts, cb) {
+		
+		(cb||test)( new GROUP(opts || 4) );
+
+	}
+};
+
 function GROUP(N) {
 	function rot(i,x) {  // rotation permutation
 		var rtn = new Array(N);
@@ -293,97 +301,97 @@ function GROUP(N) {
 	
 }
 
-var G = new GROUP(N=4);
+function test(G) {
+	/*7811
+	6921
+	5431
+	2222
+	*/
+	var A = G.image(`
+	1789
+	1234
+	4321
+	6543
+	`, 16);
 
-/*7811
-6921
-5431
-2222
-*/
-var A = G.image(`
-1789
-1234
-4321
-6543
-`, 16);
+	var Uset = {};
 
-var Uset = {};
+	G.haar( A,	G.rho[1], 3 , "", function (S,leg) {
 
-G.haar( A,	G.rho[1], 3 , "", function (S,leg) {
-	
-	function dot(a,b) {
-		for (var n=0, N=a.length, rtn=0; n<N; n++) rtn += a[n] * b[n];
-		return rtn;
-	}
-	
-	function proj(u,v) {
-		return scale( copy(u), - dot(v, u) / dot(u, u) );
-	}
-	
-	function scale(u,v) {
-		if (v.constructor == Array)
-			for (var n=0, N=u.length; n<N; n++) u[n] = v[n] * u[n];
+		function dot(a,b) {
+			for (var n=0, N=a.length, rtn=0; n<N; n++) rtn += a[n] * b[n];
+			return rtn;
+		}
+
+		function proj(u,v) {
+			return scale( copy(u), - dot(v, u) / dot(u, u) );
+		}
+
+		function scale(u,v) {
+			if (v.constructor == Array)
+				for (var n=0, N=u.length; n<N; n++) u[n] = v[n] * u[n];
+			else
+				for (var n=0, N=u.length; n<N; n++) u[n] = v * u[n];
+
+			return u;
+		}
+
+		function add(u,v) {
+			if (v.constructor == Array)
+				for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v[n];
+			else
+				for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v;
+
+			return u;
+		}
+
+		function copy(u) {
+			return init(new Array(u.length), u);
+		}
+
+		function init(u,a) {
+			if (a.constructor == Array)
+				for (var n=0, N=u.length; n<N; n++) u[n] = a[n];
+			else
+				for (var n=0, N=u.length; n<N; n++) u[n] = a;
+
+			return u;
+		}
+
+		function gs(v, us) {
+			var  u = copy(v);
+
+			for (var n in us) 
+				if ( isnull( add(u, proj(us[n], v)) ) ) {
+					//console.log(["drop "+n, v]);
+					return null;
+				}
+
+			return u;
+		}
+
+		function isnull(u) {	
+			for (var n=0, N=u.length; n<N; n++)
+				if ( Math.abs(u[n]) > 1e-3 ) 
+					return false;
+
+			return true;
+		}
+
+		//console.log([leg, S]);
+
+		if (false) 
+			Uset[leg] = copy(S);
+
 		else
-			for (var n=0, N=u.length; n<N; n++) u[n] = v * u[n];
+		if (u = gs(S, Uset)) 
+			Uset[leg] = copy(u);
 
-		return u;
-	}
-	
-	function add(u,v) {
-		if (v.constructor == Array)
-			for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v[n];
-		else
-			for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v;
-			
-		return u;
-	}
-	
-	function copy(u) {
-		return init(new Array(u.length), u);
-	}
-		
-	function init(u,a) {
-		if (a.constructor == Array)
-			for (var n=0, N=u.length; n<N; n++) u[n] = a[n];
-		else
-			for (var n=0, N=u.length; n<N; n++) u[n] = a;
-		
-		return u;
-	}
-	
-	function gs(v, us) {
-		var  u = copy(v);
-		
-		for (var n in us) 
-			if ( isnull( add(u, proj(us[n], v)) ) ) {
-				//console.log(["drop "+n, v]);
-				return null;
-			}
-		
-		return u;
-	}
+	});
 
-	function isnull(u) {	
-		for (var n=0, N=u.length; n<N; n++)
-			if ( Math.abs(u[n]) > 1e-3 ) 
-				return false;
-		
-		return true;
-	}
+	//console.log(Uset);
+	for (var n in Uset) console.log(n);
 
-	//console.log([leg, S]);
-	
-	if (false) 
-		Uset[leg] = copy(S);
-	
-	else
-	if (u = gs(S, Uset)) 
-		Uset[leg] = copy(u);
-		
-});
-
-//console.log(Uset);
-for (var n in Uset) console.log(n);
-
+}
 // UNCLASSIFIED
 				   
