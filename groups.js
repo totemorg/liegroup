@@ -1,9 +1,18 @@
 // UNCLASSIFIED
 
+var
+		ENUM = require("../enum"),
+		Copy = ENUM.copy,
+		Each = ENUM.each;
+
 var GP = module.exports = {	
+	points: 4,
+	
 	config: function (opts, cb) {
+
+		if (opts) Copy(opts,GP);
 		
-		(cb||test)( new GROUP(opts || 4) );
+		(cb||test)( new GROUP(GP.points) );
 
 	}
 };
