@@ -6,14 +6,13 @@ var
 		Each = ENUM.each;
 
 var GP = module.exports = {	
-	points: 4,
+	points: 4, // default number of point
 	
 	config: function (opts, cb) {
-
+		
 		if (opts) Copy(opts,GP);
 		
-		(cb||test)( new GROUP(GP.points) );
-
+		if (cb) cb( new GROUP(GP.points) );
 	}
 };
 
@@ -402,5 +401,8 @@ function test(G) {
 	for (var n in Uset) console.log(n);
 
 }
+
+//test( new GROUP(GP.points) );
+
 // UNCLASSIFIED
 				   
