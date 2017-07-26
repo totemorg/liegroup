@@ -1,14 +1,14 @@
 {
-  "name": "groups",
+  "name": "liegroup",
   "version": "1.0.0",
-  "description": "groups for N-gons",
-  "main": "groups.js",
+  "description": "liegroup for N-gons",
+  "main": "liegroup.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git@git.geointapps.org:acmesds/groups.git"
+    "url": "git@git.geointapps.org:acmesds/liegroup.git"
   },
   "author": "acmesds",
   "license": "ISC",
