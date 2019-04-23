@@ -13,7 +13,6 @@
   "author": "acmesds",
   "license": "ISC",
   "dependencies": {
-    "edmonds-blossom": "^1.0.0",
-    "node-svm": "^2.1.8"
+    "edmonds-blossom": "^1.0.0"
   }
 }
