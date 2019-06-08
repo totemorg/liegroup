@@ -1,9 +1,7 @@
 // UNCLASSIFIED
 
-const {Copy,extend} = require("../enum");
+const {Copy,Log} = require("../enum");
 		
-var Log = console.log;
-
 /*
 var LG = module.exports = {	
 	points: 4, // default number of points
@@ -27,7 +25,7 @@ function $(N, cb) {
 		for (var n=0, N=this.length; n<N; n++) cb( n, this );
 		return this;
 	}
-].extend(Array);
+].Extend(Array);
 	
 var LG = module.exports = {
 	group: GROUP,
@@ -354,7 +352,7 @@ function GROUP(N) {	// N-point group generator
 	}
 }
 
-switch ( process.argv[2] ) {
+switch ( process.argv[2] ) { //< unit tests
 	case "L1":
 	/*7811
 	6921
