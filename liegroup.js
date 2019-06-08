@@ -24,7 +24,8 @@ function $(N, cb) {
 
 [ 
 	function $(cb) {
-		for (var n=0, N=this.length;n<N; n++) cb( n, this );
+		for (var n=0, N=this.length; n<N; n++) cb( n, this );
+		return this;
 	}
 ].extend(Array);
 	
@@ -105,7 +106,7 @@ var LG = module.exports = {
 			M = A.length, N = round( sqrt(M) ),	// image A is NxN
 			M2 = floor((M-N)/2)+N, 		// number of pairs in image A
 			pairs = LG.pairs(M, rho),	// (x,y) pairs
-			pos = "+", neg = "-",	// symbols
+			pos = "+", neg = "-",	// symbols +/- = sum/dif computed on this leg
 			coef = { n: 0, map: $(M) };
 			
 		coef[pos] = $(M2);
@@ -375,36 +376,44 @@ switch ( process.argv[2] ) {
 		LG.haar( A,	G.rho[1], 3 , "", function (S,leg) {
 
 			function dot(a,b) {
-				for (var n=0, N=a.length, rtn=0; n<N; n++) rtn += a[n] * b[n];
-				return rtn;
+				var
+					sum = 0;
+				
+				for (var n=0, N=a.length; n<N; n++) sum += a[n] * b[n];
+				return sum;
 			}
 
 			function proj(u,v) {
 				return scale( copy(u), - dot(v, u) / dot(u, u) );
 			}
 
-			function scale(u,v) {
+			function scale(u,a) {
+				/*
 				if (v.constructor == Array)
 					for (var n=0, N=u.length; n<N; n++) u[n] = v[n] * u[n];
 				else
 					for (var n=0, N=u.length; n<N; n++) u[n] = v * u[n];
 
-				return u;
+				return u; */
+				return u.$( (n,u) => u[n] *= a );
 			}
 
 			function add(u,v) {
-				if (v.constructor == Array)
+				/*if (v.constructor == Array)
 					for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v[n];
 				else
 					for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v;
 
-				return u;
+				return u;*/
+				return u.$( (n,u) => u[n] += v[n] );
 			}
 
 			function copy(u) {
-				return init(new Array(u.length), u);
+				//return init(new Array(u.length), u);
+				return $(u.length, (n,x) => x[n] = u[n] );
 			}
 
+			/*
 			function init(u,a) {
 				if (a.constructor == Array)
 					for (var n=0, N=u.length; n<N; n++) u[n] = a[n];
@@ -412,7 +421,7 @@ switch ( process.argv[2] ) {
 					for (var n=0, N=u.length; n<N; n++) u[n] = a;
 
 				return u;
-			}
+			}*/
 
 			function gs(v, us) {
 				var  u = copy(v);
@@ -450,12 +459,16 @@ switch ( process.argv[2] ) {
 		//Log(Uset);
 		for (var n in Uset) Log(n);
 /* 
-for N=4 should get (N+1)x(N+1) disparity map:
-++++
-+++-
-++-+
-+-++
--+++
+for this image, should produce the 5x5 disparity map:
+
+		++++
+		+++-
+		++-+
+		+-++
+		-+++
+
+where +/- denotes sum/dif scattering calculation along each leg of 
+the scattering.  Here only 5 legs were significant enough to be retained.
 */
 		break;
 }
