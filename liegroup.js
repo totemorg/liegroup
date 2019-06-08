@@ -1,7 +1,7 @@
 // UNCLASSIFIED
 
-const {Copy} = require("../enum");
-
+const {Copy,extend} = require("../enum");
+		
 var Log = console.log;
 
 /*
@@ -16,10 +16,23 @@ var LG = module.exports = {
 	}
 };  */
 
+function $(N, cb) {
+	var A = new Array(N);
+	if (cb) for (var n=0; n<N; n++) cb( n,A );
+	return A;
+}
+
+[ 
+	function $(cb) {
+		for (var n=0, N=this.length;n<N; n++) cb( n, this );
+	}
+].extend(Array);
+	
 var LG = module.exports = {
 	group: GROUP,
 	
 	// Provide imaging methods
+	
 	image: function(X, M) {
 	// Return supplied KxK image string X centered in an image A of M^2 entries..
 	
@@ -48,98 +61,76 @@ var LG = module.exports = {
 		return A;
 	},
 	
+	pairs: function (M, rho) {
+	/*
+	Pair (xm,ym) by reflecting xm about (alpha,beta)-line lying in NxN image.
+	*/
+		const {round, floor,PI,cos,sin,sqrt} = Math;
+		
+		var 
+			N = round( sqrt(M) ),	// image A is M^2 = NxN
+			M2 = floor((M-N)/2)+N, 		// number of pairs in image A
+			N2 = (N-1)/2,
+
+			alpha = cos(rho * PI/180), // line of reflection symmetry
+			beta = sin(rho * PI/180);
+		
+		return $(M, (n, P) => {
+			var
+				xm = n,
+				x0 = [ floor(xm / N), xm % N ],  // start [image row col]
+				x = [ x0[0]-N2, x0[1]-N2 ], 	// image location
+
+				t = alpha * x[0] + beta * x[1],  // parametric parms
+				u = beta * x[0] - alpha * x[1],
+
+				y = [ alpha*t - beta*u, beta*t + alpha*u ],  // end image location
+				y0 = [ round(y[0]+N2), round(y[1]+N2) ],
+
+				ym = y0[0] * N + y0[1];
+			
+			P[n] = {x: xm, y: ym};
+		});
+	},
+						
 	scatter: function (A,rho,leg,cb) {
 	/*
 	Compute scattering of an image A about the rho symmetry from the named leg.  Each pair is 
 	passed to the callback cb(pair) to compute its (+/-) scattering coefficients.  After all
-	 pairs are made, the computed scattering coefficients coff are passed to cb(coef, leg).
+	pairs are made, the computed scattering coefficients coff are passed to cb(coef, leg).
 	*/
-		
-		const {floor, round, sqrt, cos, sin, PI} = Math;
+		const {round, floor, sqrt} = Math;
 		
 		var 
 			M = A.length, N = round( sqrt(M) ),	// image A is NxN
-			M2 = floor((M-N)/2)+N, N2 = (N-1)/2, 		// number of pairs in image A
-
-			alpha = cos(rho * PI/180), // line of reflection symmetry
-			beta = sin(rho * PI/180),
-
+			M2 = floor((M-N)/2)+N, 		// number of pairs in image A
+			pairs = LG.pairs(M, rho),	// (x,y) pairs
 			pos = "+", neg = "-",	// symbols
-			coef = { n: 0, map: new Array(M) };
+			coef = { n: 0, map: $(M) };
 			
-		coef[pos] = new Array(M2);
-		coef[neg] = new Array(M2);
+		coef[pos] = $(M2);
+		coef[neg] = $(M2);
 		//Log( [rho, [M,N],[M2,N2],[alpha,beta] ] );
 
-		/*
-		var
-			a = N2 * Math.sqrt( 2 ),
-			a2 = a*a,		
-			dx = dy = 1,
-			dt = Math.max(alpha, beta),
-			gamma = alpha*alpha + beta*beta,			
-			du = Math.abs( dy*alpha/gamma - dx*beta/gamma );
-			
-		for (var t=-a; t<a; t+=dt)
-			for (var b=Math.sqrt(a2 - t*t), u=0; u<b; u+=du) {
-				
-				var 
-					x = [ alpha*t - beta*u, beta*t + alpha*u ], // coordinates of pair
-					y = [ alpha*t + beta*u, beta*t - alpha*u ],
-					
-					x0 = [ Math.floor(x[0] + N2), Math.floor(x[1] + N2) ],  // shift to center of image
-					y0 = [ Math.floor(y[0] + N2), Math.floor(y[1] + N2) ],
-					
-					xm = N * x0[0] + x0[1],  // index into image
-					ym = N * y0[0] + y0[1],
-					
-					pair = { x: A[xm], y: A[ym] };
-
-				Log( [ x,x0,xm, y,y0,ym, pair ]);
-
-				if ( pair.x != undefined && pair.y != undefined ) { // pair inside image
-					if (cb) cb(pair);
-
-					A[y0][y1] = pair.x;
-					A[x0][x1] = pair.y;
-					//Log([x0,x1], [y0,y1], pair);
-					//Log([ x,y, pair]);
-				}
-				//else
-				//	Log([x0,x1], [y0,y1]);
-					
-			}
-		*/
-
-		for (var xm=0; xm<M; xm++) {  // generate (x,y) pairs
+		pairs.forEach( pair => { // generate (x,y) image pairs from (x,y) pairs
 			var
-				x0 = [ floor(xm / N), xm % N ],  // pair start [image row col]
-				x = [ x0[0]-N2, x0[1]-N2 ], 	// image location
-
-				t = alpha * x[0] + beta * x[1],  // pair parametric parms
-				u = beta * x[0] - alpha * x[1],
-
-				y = [ alpha*t - beta*u, beta*t + alpha*u ],  // pair end image location
-				y0 = [ round(y[0]+N2), round(y[1]+N2) ],
-				ym = y0[0] * N + y0[1],
-
-				pair = { x: A[xm], y: A[ym] };
+				img = { x: A[pair.x], y: A[pair.y] };
 			
-			if ( !coef.map[xm] ) {  // pair has not been connected
-				coef.map[xm] = ym;  // map pair being connected
-				coef.map[ym] = xm;
+			if ( !coef.map[pair.x] ) {  // pair has not yet been connected
+				coef.map[pair.x] = pair.y;  // map pair being connected
+				coef.map[pair.y] = pair.x;
 
 				if ( cb ) {  // cb computes the pair scattering symmetries (x,y)
-					cb(pair);
+					cb(img);
 
-					coef["+"][coef.n] = pair.x;
-					coef["-"][coef.n] = pair.y;
+					coef[pos][coef.n] = img.x;
+					coef[neg][coef.n] = img.y;
 					coef.n++;
 				}
 
-				//Log([ x0, y0, coef.n, [pair.x, pair.y] ]);
+				//Log([ x0, y0, coef.n, img ]);
 			}
-		}
+		});
 		
 		if (cb) {  // return symmetries to callback 
 			cb( coef[pos] , leg + pos );
@@ -148,12 +139,17 @@ var LG = module.exports = {
 	},
 	
 	haar: function haar(A,rho,depth,leg,cb) {
-	// Deep haar scatter image A about the rho symmetry to the requested depth starting from the named leg.
+	/*
+	Deep haar scatter image A about the rho symmetry to the 
+	requested depth starting from the named leg.
+	*/
 			
 		function recurse(A,depth,leg) { // pad image A to square and pass to haar
+			const {round, sqrt, max, min} = Math;
+			
 			var
 				M = A.length,
-				pad = Math.max(0, Math.pow(Math.round( Math.sqrt(M) ),2) - M),
+				pad = max(0, round( sqrt(M) )**2 - M),
 				pads = new Array(pad);
 
 			//Log(['pad',depth,leg,M,pad]);
@@ -184,7 +180,7 @@ var LG = module.exports = {
 	}
 }
 
- function GROUP(N) {	// N-point group generator
+function GROUP(N) {	// N-point group generator
 /*
 	Generate the 2N symmetries of an N-point group G.  For every g in G
  
@@ -422,7 +418,7 @@ switch ( process.argv[2] ) {
 				var  u = copy(v);
 
 				for (var n in us) 
-					if ( isnull( add(u, proj(us[n], v)) ) ) {
+					if ( allZero( add(u, proj(us[n], v)) ) ) {
 						//Log(["drop "+n, v]);
 						return null;
 					}
@@ -430,9 +426,11 @@ switch ( process.argv[2] ) {
 				return u;
 			}
 
-			function isnull(u) {	
+			function allZero(u) {	
+				const {abs} = Math;
+				
 				for (var n=0, N=u.length; n<N; n++)
-					if ( Math.abs(u[n]) > 1e-3 ) 
+					if ( abs(u[n]) > 1e-3 ) 
 						return false;
 
 				return true;
@@ -451,6 +449,14 @@ switch ( process.argv[2] ) {
 
 		//Log(Uset);
 		for (var n in Uset) Log(n);
+/* 
+for N=4 should get (N+1)x(N+1) disparity map:
+++++
++++-
+++-+
++-++
+-+++
+*/
 		break;
 }
 
