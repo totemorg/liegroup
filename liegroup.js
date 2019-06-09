@@ -223,6 +223,10 @@ function GROUP(N) {	// N-point group generator
 	and equivalency-tests X
 
 		X[ h ][ f*g ] = true if f*g = h	
+		
+	Conjugacy classes C are also computed, these involving the triple products
+	_g * f * g = h, for all f,g != e in G where _g = inv(g).  We say that f and h are in the 
+	same conjugacy class k when C[k][f] = C[k][h] = k.	
 	*/
 	 
 	function rot(i,x) {  // rotation permutation
@@ -334,7 +338,7 @@ function GROUP(N) {	// N-point group generator
 		for (var n=0; n<N; n++) G[g="s"+n] = (H[g]=swap)(A[g]=n,e);
 
 	for (var f in G) for (var g in G)
-		find( fg = H[g](A[g], G[f]), h => {
+		find( fg = H[g](A[g], G[f]), h => {  // H[g] = PermOp(arg, perm)
 			if (h == "e") {					// if h = identity returned
 				I[f] = g; I[g] = f;				// save inverses  f * I[ f ] = e
 				if (f == g) V.push(f);		// save involutes V[ f ] * V[ f ] = e
@@ -344,16 +348,16 @@ function GROUP(N) {	// N-point group generator
 
 			if (! X[h] ) X[h] = {}; 	// reserve for tests 
 			X[h][fg] = (f[0] != "r" && g[0] != "r") ? true : false;  // save X[ h ][ f*g ] true if f*g = h
-		});  // H[g] = PermOp(arg, perm)
+		});  
 
 	// Generate conjugacy classes C.
 
 	for (var f in G) for (var g in G) if (f != "e" && g != "e") {
-		var _g = I[g], _gf = P[_g+"*"+f], _gfg = H[g](A[g], G[_gf]);
+		var _g = I[ g ], _gf = P[ _g+"*"+f ], _gfg = H[g](A[g], G[_gf]);
 
-		find(_gfg, function (h) {
+		find( _gfg, h => {
 			for (var k=0, K=C.length; k<K; k++)
-				if ( C[k][f] ) return C[k][h]=k;
+				if ( C[k][f] ) return C[k][h] = k;
 				//else
 				//if (C[k][h] ) return C[k][f]=k;
 
@@ -366,8 +370,8 @@ function GROUP(N) {	// N-point group generator
 switch ( process.argv[2] ) { //< unit tests
 	case "L3":
 		Log("G(4) has 8 elements", new GROUP(4));
-		Log("G(3) has 6 elements", new GROUP(3));
-		Log("G(5) has 10 elements", new GROUP(5));
+		//Log("G(3) has 6 elements", new GROUP(3));
+		//Log("G(5) has 10 elements", new GROUP(5));
 		break;
 		
 	case "L2":
