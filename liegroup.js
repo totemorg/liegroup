@@ -203,10 +203,10 @@ function GROUP(N) {	// N-point group generator
 		A[g] = 0 ... K
 
 	There are, for N = 4 points, 8 = 2N elements in the G(4) group: 3 rotators
-	(r1, r2, r3), 2 flips (f0, f1), 2 mirrors (m0, m1) and an identity (e).  Here
-	arguments A = [3, 2, 2, 0].  The G(3) group contains 6 = 2N elements: 2 rotators (r1, r2), 
-	3 swaps	(s0, s1, s2), and the identity (e): all odd-point groups contain neither flips nor
-	mirrors.
+	(r1, r2, r3) = (45, 90, 135 degs), 2 flips (f0, f1) = (H, V), 2 mirrors (m0, m1) = (/, \) and 
+	an identity (e).  Here arguments A = [3, 2, 2, 0].  The G(3) group contains 6 = 2N 
+	elements: 2 rotators (r1, r2), 3 swaps	(s0, s1, s2), and the identity (e): all odd-point 
+	groups contain neither flips nor mirrors.
 
 	Also generates products P for f,g,h in group G
 
