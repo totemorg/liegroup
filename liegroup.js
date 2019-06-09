@@ -202,9 +202,9 @@ function GROUP(N) {	// N-point group generator
 
 		A[g] = 0 ... K
 
-	There are, for N = 4 points, 8 elements in the G(4) group: 3 rotators
+	There are, for N = 4 points, 8 = 2N elements in the G(4) group: 3 rotators
 	(r1, r2, r3), 2 flips (f0, f1), 2 mirrors (m0, m1) and an identity (e).  Here
-	arguments A = [3, 2, 2, 0].  The G(3) group contains 6 elements: 2 rotators (r1, r2), 
+	arguments A = [3, 2, 2, 0].  The G(3) group contains 6 = 2N elements: 2 rotators (r1, r2), 
 	3 swaps	(s0, s1, s2), and the identity (e): all odd-point groups contain neither flips nor
 	mirrors.
 
@@ -365,9 +365,9 @@ function GROUP(N) {	// N-point group generator
 
 switch ( process.argv[2] ) { //< unit tests
 	case "L3":
-		//Log("G(4)", new GROUP(4));
-		Log("G(3)", new GROUP(3));
-		//Log("G(5)", new GROUP(5));
+		Log("G(4) has 8 elements", new GROUP(4));
+		Log("G(3) has 6 elements", new GROUP(3));
+		Log("G(5) has 10 elements", new GROUP(5));
 		break;
 		
 	case "L2":
