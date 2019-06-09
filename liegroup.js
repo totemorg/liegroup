@@ -62,12 +62,12 @@ var LG = module.exports = {
 	
 	pairs: function (M, rho) {
 	/*
-	Pair (xm,ym) by reflecting xm about (alpha,beta)-line lying in NxN image.
+	Pair (xm,ym) by reflecting xm about the rho-rotational symmetry lying in an M=N^2 image.
 	*/
 		const {round, floor,PI,cos,sin,sqrt} = Math;
 		
 		var 
-			N = round( sqrt(M) ),	// image A is M^2 = NxN
+			N = round( sqrt(M) ),	// image A has M = NxN elements
 			M2 = floor((M-N)/2)+N, 		// number of pairs in image A
 			N2 = (N-1)/2,
 
@@ -88,7 +88,7 @@ var LG = module.exports = {
 
 				ym = y0[0] * N + y0[1];
 			
-			P[n] = {x: xm, y: ym};
+			P[n] = {x: xm, y: ym, x0: x0, y0: y0};
 		});
 	},
 						
@@ -122,8 +122,8 @@ var LG = module.exports = {
 				if ( cb ) {  // cb computes the pair scattering symmetries (x,y)
 					cb(img);
 
-					coef[pos][coef.n] = img.x;
-					coef[neg][coef.n] = img.y;
+					coef[pos][coef.n] = img[pos];
+					coef[neg][coef.n] = img[neg];
 					coef.n++;
 				}
 
@@ -143,16 +143,21 @@ var LG = module.exports = {
 	requested depth starting from the named leg.
 	*/
 			
-		function recurse(A,depth,leg) { // pad image A to square and pass to haar
+		function recurse(A,depth,leg) { // pad image A to square and pass to haar 
+		/* 
+		At level depth, the M = NxN image A is split into two halves of H = (M-N)/2 elements
+		each.  At the next depth-1 level, the KxK image is padded so that it contains no 
+		more than H elements, i.e. so M+pad = KxK.
+		*/
 			const {round, sqrt, max, min} = Math;
 			
 			var
 				M = A.length,
 				pad = max(0, round( sqrt(M) )**2 - M),
-				pads = new Array(pad);
+				pads = $( pad, (n,p) => p[n] = 0 );
 
-			//Log(['pad',depth,leg,M,pad]);
-			for (var n=0; n<pad; n++) pads[n] = 0;
+			//Log(['pad',depth,leg,M,pad,M+pad]);
+			//for (var n=0; n<pad; n++) pads[n] = 0;
 
 			haar(A.concat(pads), rho, depth, leg, cb);
 		}
@@ -161,18 +166,22 @@ var LG = module.exports = {
 		
 		LG.scatter(A, rho, leg, function (pair, leg) { 	// get scattering symmetries
 
-			if (pair.constructor == Array)   // image so recurse down haar tree
-				if (depth)  							// recurse to next depth
-					recurse( pair , depth-1, leg);
+			if (leg) {  // (image,leg) provided so recurse down haar tree
+				//Log("depth", depth, pair.length);
 
-				else  									// callback with scatterings
+				if (depth)	// recurse to next depth
+					recurse( pair , depth-1, leg );
+
+				else  	{ // callback with scatterings
 					cb( pair , leg );
+				}
+			}
 			
-			else {  // pair so compute its haar scattering
-				var x = pair.x, y = pair.y;
+			else {  // (pair) provided so compute its haar scattering
+				//var x = pair.x, y = pair.y;
 				
-				pair.x = x+y;
-				pair.y = abs(x-y);
+				pair['+'] = pair.x + pair.y;			// sum (+)
+				pair['-'] = abs( pair.x - pair.y );	// dif (-)
 			}
 
 		});
@@ -353,25 +362,28 @@ function GROUP(N) {	// N-point group generator
 }
 
 switch ( process.argv[2] ) { //< unit tests
-	case "L1":
+	case "LG":
 	/*7811
 	6921
 	5431
 	2222
 	*/
 		var 
-			G = new GROUP(4),
+			N = 4,
+			depth = 3,
+			G = new GROUP(N),
 			Uset = {},
 			A = LG.image(`
 1789
 1234
 4321
 6543
-`, 16);		// 16x16 image from string
+`, 16);		// 256=16x16 image from string
 
 		//Log(A);
-
-		LG.haar( A,	G.rho[1], 3 , "", function (S,leg) {
+		//Log(G);
+		
+		LG.haar( A,	G.rho[1], depth , "", function (S,leg) {
 
 			function dot(a,b) {
 				var
@@ -421,11 +433,11 @@ switch ( process.argv[2] ) { //< unit tests
 				return u;
 			}*/
 
-			function gs(v, us) {
+			function gs(v, uset) {
 				var  u = copy(v);
 
-				for (var n in us) 
-					if ( allZero( add(u, proj(us[n], v)) ) ) {
+				for (var leg in uset) 
+					if ( allZero( add(u, proj(uset[leg], v)) ) ) {
 						//Log(["drop "+n, v]);
 						return null;
 					}
@@ -443,7 +455,7 @@ switch ( process.argv[2] ) { //< unit tests
 				return true;
 			}
 
-			//Log([leg, S]);
+			Log(leg, S.length);
 
 			if (false) 
 				Uset[leg] = copy(S);
@@ -457,7 +469,8 @@ switch ( process.argv[2] ) { //< unit tests
 		//Log(Uset);
 		for (var n in Uset) Log(n);
 /* 
-for this image, should produce the 5x5 disparity map:
+Here, this produces 5 significant scattering vectors of length 28 in 
+each leg of length 4 = depth+1:
 
 		++++
 		+++-
@@ -465,8 +478,12 @@ for this image, should produce the 5x5 disparity map:
 		+-++
 		-+++
 
-where +/- denotes sum/dif scattering calculation along each leg of 
-the scattering.  Here only 5 legs were significant enough to be retained.
+where +/- denotes sum/dif scattering calculations along each leg of the scattering.  
+Here the M = 256 = 16^2 image at depth 4 partitions into halves of length 136, 78, 45, 28 
+at depth = 3, 2, 1, 0; and thus images of length 144 = 12^2 = 136 + 8, 81 = 9^2 = 78 + 3, 
+49 = 7^2 = 45 + 4, 36 = 6^2 = 28 + 8.  Thus, here, the last (depth=0) image (aka scattering
+vector S) is of length 28.  Of the 16 = 2^(depth+1) legs taken, only 5 produced significant 
+scattering, as measured by projecting S on the other 16 vectors.
 */
 		break;
 }
