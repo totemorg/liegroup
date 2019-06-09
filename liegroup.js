@@ -362,7 +362,14 @@ function GROUP(N) {	// N-point group generator
 }
 
 switch ( process.argv[2] ) { //< unit tests
-	case "LG":
+	case "L2":
+		Log( "4x4 Vsym 0deg pairs", LG.pairs(16, 0 ) );
+		Log( "4x4 Hsym 90deg pairs", LG.pairs(16, 90 ) );
+		Log( "4x4 \\sym 45deg pairs", LG.pairs(16, 45 ) );
+		Log( "4x4 /sym -45deg pairs", LG.pairs(16, -45 ) );
+		break;
+		
+	case "L1":
 	/*7811
 	6921
 	5431
