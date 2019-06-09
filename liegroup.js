@@ -276,17 +276,17 @@ function GROUP(N) {	// N-point group generator
 		return x;
 	}
 
-	function eq(x,y) { // test permuations are equal
-		for (var n=0;n<N;n++)
-			if (x[n] != y[n]) return false;
+	function find(x, cb) { // callback cb(h) with element h of G that produces perm x
+		function eq(x,y) { // test if permuations x,y are equal
+			for (var n=0;n<N;n++)
+				if (x[n] != y[n]) return false;
 
-		return true;
-	}
+			return true;
+		}
 
-	function find(x, cb) { // find permuation and pass to callback
 		for (var h in G)
-				if ( eq(x, G[h]) )
-					return cb(h);
+			if ( eq(x, G[h]) )
+				return cb(h);
 
 		Log("Houston we have a problem - G is not a group!");
 	}
