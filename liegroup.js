@@ -35,9 +35,9 @@ var LG = module.exports = {
 	image: function(X, M) {
 	// Return supplied KxK image string X centered in an image A of M^2 entries..
 	
-		var A = new Array(M*M);
+		var A = $(M*M, (n,A) => A[n] = 0);
 
-		for (var n=0,N=A.length; n<N; n++) A[n] = 0;
+		//for (var n=0,N=A.length; n<N; n++) A[n] = 0;
 
 		for (var n=1,K=0, N=X.length; n<N; n++,K++)
 			if ( X.charAt(n) == "\n" ) break;
@@ -202,9 +202,11 @@ function GROUP(N) {	// N-point group generator
 
 		A[g] = 0 ... K
 
-	For N = 4 points, for example, there are 8 elements in the group G: 3 rotators
-	(r1, r2, r3), 2 flippers (f0, f1), 2 mirrors (m0, m1) and an identity (e).  Here
-	arguments A = [3, 2, 2, 0].  
+	There are, for N = 4 points, 8 elements in the G(4) group: 3 rotators
+	(r1, r2, r3), 2 flips (f0, f1), 2 mirrors (m0, m1) and an identity (e).  Here
+	arguments A = [3, 2, 2, 0].  The G(3) group contains 6 elements: 2 rotators (r1, r2), 
+	3 swaps	(s0, s1, s2), and the identity (e): all odd-point groups contain neither flips nor
+	mirrors.
 
 	Also generates products P for f,g,h in group G
 
@@ -224,14 +226,14 @@ function GROUP(N) {	// N-point group generator
 	*/
 	 
 	function rot(i,x) {  // rotation permutation
-		var rtn = new Array(N);
-		for (var n=0; n<N; n++)
-			rtn[n] = x[ (N-i+n) % N ];
-		return rtn;
+		return $(N, (n,rtn) => rtn[n] = x[ (N-i+n) % N ] );
+		//for (var n=0; n<N; n++)
+		//	rtn[n] = x[ (N-i+n) % N ];
+		// return rtn;
 	}
 
 	function mirror(i,x) {  // mirror permutation
-		var rtn = new Array(N);
+		var rtn = $(N);
 		rtn[i] = x[i];
 		i += N2;
 		rtn[i] = x[i];
@@ -243,7 +245,7 @@ function GROUP(N) {	// N-point group generator
 	}
 
 	function swap(i,x) { // swap permutation
-		var rtn = new Array(N);
+		var rtn = $(N);
 		rtn[i] = x[i];
 		for (var n=1,iL=(N+i-n)%N,iR=(i+n)%N; n<=N2; n++,iL=(N+i-n)%N,iR=(i+n)%N) {
 			rtn[iL] = x[iR];
@@ -253,7 +255,7 @@ function GROUP(N) {	// N-point group generator
 	}
 
 	function flip(i,x) { // flip permuation
-		var rtn = new Array(N);
+		var rtn = $(N);
 		for (var n=0,iL=i,iR=i+1,iN=i+1; n<iN; n++,iL--,iR++) {
 			rtn[iL] = x[iR];
 			rtn[iR] = x[iL];
@@ -287,9 +289,9 @@ function GROUP(N) {	// N-point group generator
 
 	function index(k) {
 		k = k || 1;
-		var rtn = new Array(N);
-		for (var n=0; n<N; n++) rtn[n] = n*k;
-		return rtn;
+		return $(N, (n,rtn) => rtn[n] = n*k );
+		//for (var n=0; n<N; n++) rtn[n] = n*k;
+		//return rtn;
 	}
 
 	var 
@@ -362,6 +364,12 @@ function GROUP(N) {	// N-point group generator
 }
 
 switch ( process.argv[2] ) { //< unit tests
+	case "L3":
+		//Log("G(4)", new GROUP(4));
+		Log("G(3)", new GROUP(3));
+		//Log("G(5)", new GROUP(5));
+		break;
+		
 	case "L2":
 		Log( "4x4 Vsym 0deg pairs", LG.pairs(16, 0 ) );
 		Log( "4x4 Hsym 90deg pairs", LG.pairs(16, 90 ) );
