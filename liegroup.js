@@ -2,18 +2,6 @@
 
 const {Copy,Log} = require("../enum");
 		
-/*
-var LG = module.exports = {	
-	points: 4, // default number of points
-	
-	config: function (opts, cb) {
-		
-		if (opts) Copy(opts,LG);
-		
-		return new GROUP(LG.points);
-	}
-};  */
-
 function $(N, cb) {
 	var A = new Array(N);
 	if (cb) for (var n=0; n<N; n++) cb( n,A );
@@ -37,14 +25,10 @@ var LG = module.exports = {
 	
 		var A = $(M*M, (n,A) => A[n] = 0);
 
-		//for (var n=0,N=A.length; n<N; n++) A[n] = 0;
-
 		for (var n=1,K=0, N=X.length; n<N; n++,K++)
 			if ( X.charAt(n) == "\n" ) break;
 		
 		var pad = (M-K)/2;	// left, right, top, bottom padding
-		
-		//Log({K: K, pad: pad});
 		
 		for (var n=1, N=X.length, m=pad*M+pad; n<N; n++) {
 			if ( (x = X.charAt(n)) == "\n" ) 
@@ -54,8 +38,7 @@ var LG = module.exports = {
 				A[m++] = parseInt(x);
 		}
 
-		//Log({image: A});
-		//for (var m=0; m<A.length; m++) Log(m,A[m]);
+		//Log({K: K, pad: pad, image: A});
 		
 		return A;
 	},
@@ -94,7 +77,7 @@ var LG = module.exports = {
 						
 	scatter: function (A,rho,leg,cb) {
 	/*
-	Compute scattering of an image A about the rho symmetry from the named leg.  Each pair is 
+	Compute scattering of an image A about the rho-defined reflection symmetry from the named leg.  Each pair is 
 	passed to the callback cb(pair) to compute its (+/-) scattering coefficients.  After all
 	pairs are made, the computed scattering coefficients coff are passed to cb(coef, leg).
 	*/
@@ -139,7 +122,7 @@ var LG = module.exports = {
 	
 	haar: function haar(A,rho,depth,leg,cb) {
 	/*
-	Deep haar scatter image A about the rho symmetry to the 
+	Deep haar scatter image A about the rho-defined reflection symmetry to the 
 	requested depth starting from the named leg.
 	*/
 			
@@ -157,7 +140,6 @@ var LG = module.exports = {
 				pads = $( pad, (n,p) => p[n] = 0 );
 
 			//Log(['pad',depth,leg,M,pad,M+pad]);
-			//for (var n=0; n<pad; n++) pads[n] = 0;
 
 			haar(A.concat(pads), rho, depth, leg, cb);
 		}
@@ -178,8 +160,6 @@ var LG = module.exports = {
 			}
 			
 			else {  // (pair) provided so compute its haar scattering
-				//var x = pair.x, y = pair.y;
-				
 				pair['+'] = pair.x + pair.y;			// sum (+)
 				pair['-'] = abs( pair.x - pair.y );	// dif (-)
 			}
@@ -231,9 +211,6 @@ function GROUP(N) {	// N-point group generator
 	 
 	function rot(i,x) {  // rotation permutation
 		return $(N, (n,rtn) => rtn[n] = x[ (N-i+n) % N ] );
-		//for (var n=0; n<N; n++)
-		//	rtn[n] = x[ (N-i+n) % N ];
-		// return rtn;
 	}
 
 	function mirror(i,x) {  // mirror permutation
@@ -294,8 +271,6 @@ function GROUP(N) {	// N-point group generator
 	function index(k) {
 		k = k || 1;
 		return $(N, (n,rtn) => rtn[n] = n*k );
-		//for (var n=0; n<N; n++) rtn[n] = n*k;
-		//return rtn;
 	}
 
 	var 
@@ -315,10 +290,11 @@ function GROUP(N) {	// N-point group generator
 		sym = this.sym = { // symmetry labels
 			std: {},
 			fav: {
-				f0: "h",	// flip
-				f1: "v",
-				m0: "m",	// mirror
-				n0: "n"	// rotation
+				f0: "H",	// flip
+				f1: "V",
+				m0: "/",	// mirror
+				m1: "\", 
+				r0: "N"	// rotation
 			}
 		},
 		N2 = even ? N/2 : (N-1)/2;
@@ -375,10 +351,10 @@ switch ( process.argv[2] ) { //< unit tests
 		break;
 		
 	case "L2":
-		Log( "4x4 Vsym 0deg pairs", LG.pairs(16, 0 ) );
-		Log( "4x4 Hsym 90deg pairs", LG.pairs(16, 90 ) );
-		Log( "4x4 \\sym 45deg pairs", LG.pairs(16, 45 ) );
-		Log( "4x4 /sym -45deg pairs", LG.pairs(16, -45 ) );
+		//Log( "4x4 V=f0 sym pairs", LG.pairs(16, 0 ) );
+		//Log( "4x4 H=f1 sym pairs", LG.pairs(16, 90 ) );
+		//Log( "4x4 /=m0 sym pairs", LG.pairs(16, 45 ) );
+		Log( "4x4 \\=m1 sym pairs", LG.pairs(16, -45 ) );
 		break;
 		
 	case "L1":
@@ -417,42 +393,28 @@ switch ( process.argv[2] ) { //< unit tests
 			}
 
 			function scale(u,a) {
-				/*
-				if (v.constructor == Array)
-					for (var n=0, N=u.length; n<N; n++) u[n] = v[n] * u[n];
-				else
-					for (var n=0, N=u.length; n<N; n++) u[n] = v * u[n];
-
-				return u; */
 				return u.$( (n,u) => u[n] *= a );
 			}
 
 			function add(u,v) {
-				/*if (v.constructor == Array)
-					for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v[n];
-				else
-					for (var n=0, N=u.length; n<N; n++) u[n] = u[n] + v;
-
-				return u;*/
 				return u.$( (n,u) => u[n] += v[n] );
 			}
 
 			function copy(u) {
-				//return init(new Array(u.length), u);
 				return $(u.length, (n,x) => x[n] = u[n] );
 			}
 
-			/*
-			function init(u,a) {
-				if (a.constructor == Array)
-					for (var n=0, N=u.length; n<N; n++) u[n] = a[n];
-				else
-					for (var n=0, N=u.length; n<N; n++) u[n] = a;
-
-				return u;
-			}*/
-
 			function gs(v, uset) {
+				function allZero(u) {	
+					const {abs} = Math;
+
+					for (var n=0, N=u.length; n<N; n++)
+						if ( abs(u[n]) > 1e-3 ) 
+							return false;
+
+					return true;
+				}
+
 				var  u = copy(v);
 
 				for (var leg in uset) 
@@ -462,16 +424,6 @@ switch ( process.argv[2] ) { //< unit tests
 					}
 
 				return u;
-			}
-
-			function allZero(u) {	
-				const {abs} = Math;
-				
-				for (var n=0, N=u.length; n<N; n++)
-					if ( abs(u[n]) > 1e-3 ) 
-						return false;
-
-				return true;
 			}
 
 			Log(leg, S.length);
