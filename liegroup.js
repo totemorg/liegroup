@@ -293,7 +293,7 @@ function GROUP(N) {	// N-point group generator
 				f0: "H",	// flip
 				f1: "V",
 				m0: "/",	// mirror
-				m1: "\", 
+				m1: "\\", 
 				r0: "N"	// rotation
 			}
 		},
