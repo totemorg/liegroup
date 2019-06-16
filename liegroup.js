@@ -176,19 +176,30 @@ function GROUP(N) {	// N-point group generator
 
 	where the permutators H of G
 
-		H[g] = op(arg , point perm)
+		H[g] = op( arg[g] , point perm )
 
-	have arguments A
+	have arguments
 
-		A[g] = 0 ... K
+		arg[g] = 0,1, ... K
 
 	There are, for N = 4 points, 8 = 2N elements in the G(4) group: 3 rotators
-	(r1, r2, r3) = (45, 90, 135 degs), 2 flips (f0, f1) = (H, V), 2 mirrors (m0, m1) = (/, \) and 
-	an identity (e).  Here arguments A = [3, 2, 2, 0].  The G(3) group contains 6 = 2N 
-	elements: 2 rotators (r1, r2), 3 swaps	(s0, s1, s2), and the identity (e): all odd-point 
-	groups contain neither flips nor mirrors.
+	(r1, r2, r3) = (45, 90, 135 degs) = rho^[1,2,3], 2 flips (f0, f1) = (H, V), 2 mirrors 
+	(m0, m1) = (/, \) and an identity (e).  For N=4, arg[g] <= 3 for all g in G(4).  The 
+	G(3) group contains 6 = 2N elements: 2 rotators (r1, r2) = (60, 120 degs), 3 
+	swaps	(s0, s1, s2), and the identity (e).  Note odd-point groups contain swaps 
+	vs the flips and mirrors of	even-point groups. P(4) confirms, for example, that a 
+	rotation and flip:
+	
+		r1 * f0 = m0
+		r1 * f1 = m1
+		
+	implements the mirrors, whereas two flips
+	
+		f0 * f1 = r2 = rho^2
+		
+	implements the rho^2=90 deg rotation.
 
-	Also generates products P for f,g,h in group G
+	Also generated are the products P(N) for f,g,h in group G(N):
 
 		P[ f * g ] = h
 
