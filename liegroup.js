@@ -154,7 +154,7 @@ var LG = module.exports = {
 				if (depth)	// recurse to next depth
 					recurse( pair , depth-1, leg );
 
-				else  	{ // callback with scatterings
+				else { // callback with scatterings
 					cb( pair , leg );
 				}
 			}
@@ -437,7 +437,7 @@ switch ( process.argv[2] ) { //< unit tests
 				return u;
 			}
 
-			Log(leg, S.length);
+			Log(leg, S);
 
 			if (false) 
 				Uset[leg] = copy(S);
