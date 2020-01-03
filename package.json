@@ -12,7 +12,5 @@
   },
   "author": "acmesds",
   "license": "ISC",
-  "dependencies": {
-    "edmonds-blossom": "^1.0.0"
-  }
+  "dependencies": {}
 }
