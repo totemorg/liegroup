@@ -4,7 +4,10 @@
   "description": "liegroup for N-gons",
   "main": "liegroup.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "verminor": "npm version minor -f",
+    "vermajor": "npm version major -f",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "redoc": "jsdoc2md --template README.hbs --files liegroup.js >README.md; git commit -am 'redoc'; git  push agent master"
   },
   "repository": {
     "type": "git",
