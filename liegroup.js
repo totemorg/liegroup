@@ -1,6 +1,6 @@
 // UNCLASSIFIED
 
-const {Copy,Log} = require("../enum");
+const {Copy,Log} = require("./enums");
 		
 function $(N, cb) {
 	var A = new Array(N);
