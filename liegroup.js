@@ -1,6 +1,6 @@
 // UNCLASSIFIED
 
-const {Copy,Log} = require("./enums");
+const {Copy,Log} = require("@totemorg/enums");
 		
 function $(N, cb) {
 	var A = new Array(N);

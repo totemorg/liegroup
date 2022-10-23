@@ -1,0 +1,56 @@
+# [LIEGROUP](https://github.com/totem-man/LIEGROUP)
+
+
+## Installation
+
+Clone **LIEGROUP** and its dependencies from one of its REPOs:
+
+	cd MYPROJECT
+	git clone REPO/totem-man/LIEGROUP
+
+To start and manage **LIEGROUP**: 
+
+	npm run start [ ? | $ | ...]	# Unit test
+	npm run verminor				# Roll minor version
+	npm run vermajor				# Roll major version
+	npm run redoc					# Regen documentation
+
+## Usage
+
+Acquire, optionally configure and start a **LIEGROUP** server:
+
+	const LIEGROUP = require("LIEGROUP").config({
+		key: value, 						// set key
+		"key.key": value, 					// indexed set
+		"key.key.": value					// indexed append
+	}, sql => {
+		console.log( sql ? "look mom - Im running!" : "something evil is lurking" );
+	});
+
+where configuration keys follow [ENUMS deep copy conventions](https://github.com/totem-man/enums)
+
+
+## Program Reference
+<details>
+<summary>
+<i>Open/Close</i>
+</summary>
+</details>
+
+## Contacting, Contributing, Following
+
+Feel free to 
+* submit and status [TOTEM issues](http://totem.hopto.org/issues.view) 
+* contribute to [TOTEM notebooks](http://totem.hopto.org/shares/notebooks/) 
+* revise [TOTEM requirements](http://totem.hopto.org/reqts.view) 
+* browse [TOTEM holdings](http://totem.hopto.org/) 
+* or follow [TOTEM milestones](http://totem.hopto.org/milestones.view) 
+
+
+## License
+
+[MIT](LICENSE)
+
+* * *
+
+&copy; 2012 ACMESDS

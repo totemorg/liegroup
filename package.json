@@ -4,16 +4,18 @@
   "description": "liegroup for N-gons",
   "main": "liegroup.js",
   "scripts": {
-    "verminor": "npm version minor -f",
-    "vermajor": "npm version major -f",
+    "verminor": "npm version minor",
+    "vermajor": "npm version major",
     "test": "echo \"Error: no test specified\" && exit 1",
     "redoc": "jsdoc2md --template README.hbs --files liegroup.js >README.md; git commit -am 'redoc'; git  push agent master"
   },
   "repository": {
     "type": "git",
-    "url": "git@git.geointapps.org:acmesds/liegroup.git"
+    "url": "git@git.geointapps.org:totemorg/liegroup.git"
   },
-  "author": "acmesds",
+  "author": "totemorg",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "@totemorg/enums": "^1.27.0"
+  }
 }
